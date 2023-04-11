@@ -1,0 +1,27 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CameraChange : MonoBehaviour
+{
+    public Camera fpsCamera;
+    public Camera overheadCamera;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        overheadCamera.enabled = false;
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.F3))
+        {
+            fpsCamera.enabled = !fpsCamera.enabled;
+            overheadCamera.enabled = !overheadCamera.enabled;
+        }
+
+    }
+}
