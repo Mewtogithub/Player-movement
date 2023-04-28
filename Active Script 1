@@ -1,0 +1,14 @@
+using UnityEngine;
+
+public class ToggleOnLeftClick : MonoBehaviour
+{
+    public GameObject objectToToggle;
+
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            objectToToggle.SetActive(!objectToToggle.activeSelf);
+        }
+    }
+}
