@@ -1,0 +1,27 @@
+using UnityEngine;
+
+public class DisableOnLeftClick : MonoBehaviour
+{
+    public GameObject objectToDisable;
+    public float activeTime = 1.0f;
+    private bool isActive = true;
+
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (isActive == true)
+            {
+                isActive = false;
+                objectToDisable.SetActive(false);
+                Invoke("DisableObject", activeTime);
+            }
+        }
+    }
+
+    void DisableObject()
+    {
+        isActive = true;
+        objectToDisable.SetActive(true);
+    }
+}
