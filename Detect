@@ -1,0 +1,23 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Detect : MonoBehaviour
+{
+
+    public float drop = 2f;
+
+    public void Commence (float amount)
+    {
+        drop -= amount;
+        if (drop<= 0f)
+        {
+            Run();
+        }
+    }
+
+    void Run()
+    {
+        Destroy(gameObject);
+    }
+}
