@@ -1,0 +1,97 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class EquipScript : MonoBehaviour
+{
+    public Transform Drop, player;
+    public GameObject Gun;
+    public Camera Camera;
+    public float range = 2f;
+    public float open = 100f;
+    public BoxCollider coll;
+
+    public bool equipped;
+    public static bool slotfull;
+    public Rigidbody rb;
+    [SerializeField] private float RangeToPickUp = 2f;
+    private bool hasDropped = false;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        Gun.GetComponent<Rigidbody>().isKinematic = true;
+        UnequipObject();
+        Shoot();
+        EquipObject();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        Vector3 distanceToPlayer = player.position - transform.position;
+        if (!equipped && Input.GetKeyDown(KeyCode.Q) && !hasDropped)
+        {
+            hasDropped = true;
+            UnequipObject();
+            Shoot();
+        }
+        if(!equipped && distanceToPlayer.magnitude <= range && Input.GetKeyUp(KeyCode.E) && !slotfull)
+        {
+            EquipObject();
+            hasDropped = false;
+        }
+        if(equipped = false)
+        {
+            rb.isKinematic = false;
+            coll.isTrigger = false;
+        }
+        if(equipped)
+        {
+            rb.isKinematic = true;
+            coll.isTrigger = true; 
+            slotfull = true;
+        }
+        if(RangeToPickUp == 2f)
+        {
+            rb.isKinematic = true;
+            coll.isTrigger = true; 
+            slotfull = true;
+            rb.isKinematic = false;
+            coll.isTrigger = false;
+        }
+    }
+
+    void Shoot ()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(Camera.transform.position, Camera.transform.forward, out hit, range))
+        {
+            Debug.Log(hit.transform.name);
+
+            Target target = hit.transform.GetComponent<Target>();
+        }
+    }
+
+    void UnequipObject()
+    {
+        Drop.DetachChildren();
+        Gun.transform.eulerAngles = new Vector3(Gun.transform.eulerAngles.x, Gun.transform.eulerAngles.y, Gun.transform.eulerAngles.z - 45);
+        Gun.GetComponent<Rigidbody>().isKinematic = false;
+        equipped = false;
+        slotfull = false;
+        coll.isTrigger = false;
+        RangeToPickUp = 0f;
+    }
+
+    void EquipObject()
+    {
+        Gun.GetComponent<Rigidbody>().isKinematic = true;
+        Gun.transform.position = Drop.transform.position;
+        Gun.transform.rotation = Drop.transform.rotation;
+        Gun.transform.SetParent(Drop);
+        equipped = true;
+        slotfull = true;
+        coll.isTrigger = true;
+    }
+}
