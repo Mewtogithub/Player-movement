@@ -1,0 +1,66 @@
+using UnityEngine;
+
+public class GrappleHook : MonoBehaviour
+{
+    public float grapplingSpeed = 10f;
+    public float maxDistance = 20f;
+    public LayerMask grappleableMask;
+
+    public LineRenderer lineRenderer;
+    private Vector2 grapplingHookPos;
+    private bool isGrappling = false;
+
+    void Start()
+    {
+        lineRenderer = GetComponent<LineRenderer>();
+    }
+
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            // Get the position of the mouse click
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            // Cast a ray from the mouse position to check for grappleable objects
+            RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, grappleableMask);
+
+            if (hit.collider != null)
+            {
+                // Grapple to the object
+                grapplingHookPos = hit.point;
+                isGrappling = true;
+            }
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            // Stop grappling
+            isGrappling = false;
+        }
+
+        if (isGrappling)
+        {
+            // Move the player towards the grappling hook position
+            Vector2 newPos = Vector2.MoveTowards(transform.position, grapplingHookPos, grapplingSpeed * Time.deltaTime);
+            transform.position = newPos;
+
+            // Update the line renderer to show the grapple line
+            lineRenderer.enabled = true;
+            lineRenderer.SetPosition(0, transform.position);
+            lineRenderer.SetPosition(1, grapplingHookPos);
+
+            // Check if the player is too far away from the grappling hook position
+            float distance = Vector2.Distance(transform.position, grapplingHookPos);
+            if (distance > maxDistance)
+            {
+                isGrappling = false;
+            }
+        }
+        else
+        {
+            // Disable the line renderer when not grappling
+            lineRenderer.enabled = false;
+        }
+    }
+}
