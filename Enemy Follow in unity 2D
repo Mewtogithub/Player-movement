@@ -1,0 +1,63 @@
+using UnityEngine;
+
+public class EnemyFollow : MonoBehaviour
+{
+    public Transform target;
+    public float moveSpeed = 2f;
+    public float stopDistance = 1.5f;
+    public float jumpForce = 5f;
+    public float jumpFrequency = 1f;
+    public float jumpProbability = 0.5f;
+
+    private Rigidbody2D rb;
+    private bool isGrounded = false;
+    private float timeSinceLastJump = 0f;
+
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    private void Update()
+    {
+        if (target != null)
+        {
+            // Calculate the direction towards the target
+            Vector2 direction = (target.position - transform.position).normalized;
+
+            // Move towards the target if the distance is greater than the stopping distance
+            float distance = Vector2.Distance(transform.position, target.position);
+            if (distance > stopDistance)
+            {
+                transform.position += (Vector3)direction * moveSpeed * Time.deltaTime;
+            }
+
+            // Jump if the player is jumping or in the air
+            timeSinceLastJump += Time.deltaTime;
+            if (timeSinceLastJump >= jumpFrequency)
+            {
+                timeSinceLastJump = 0f;
+                if (Random.value < jumpProbability && isGrounded == false)
+                {
+                    rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+                }
+            }
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Floor")
+        {
+            isGrounded = true;
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Floor")
+        {
+            isGrounded = false;
+        }
+    }
+}
