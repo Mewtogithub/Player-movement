@@ -1,0 +1,99 @@
+using UnityEngine;
+
+public class WallRun : MonoBehaviour {
+
+// Declaring public variables
+public float moveSpeed = 20f;            // Movement speed of the player
+public float jumpForce = 20f;           // Force of the player's jump
+public float wallSlideSpeed = 20f;       // Speed at which the player slides down a wall
+public float wallJumpForce = 20f;       // Force of the player's wall jump
+public float wallJumpTime = 0.5f;       // Time duration during which the player can wall jump
+public LayerMask wallLayerMask;         // Layer mask to detect walls
+
+// Declaring private variables
+private Rigidbody2D rb;                 // Rigidbody of the player
+private CircleCollider2D circleCollider;// Collider of the player
+private bool isGrounded;                // Is the player grounded?
+private bool isWallRunning;             // Is the player wall running?
+private bool isWallSliding;             // Is the player wall sliding?
+private bool isWallSticking;            // Is the player wall sticking?
+private bool hasJumpedOffWall;          // Has the player jumped off a wall?
+private float lastWallJumpTime;         // Time when the player last wall jumped
+private Vector2 wallJumpDirection;      // Direction of the player's wall jump
+
+// Start function
+void Start() {
+    // Getting the rigidbody and collider components
+    rb = GetComponent<Rigidbody2D>();
+    circleCollider = GetComponent<CircleCollider2D>();
+}
+
+// Update function
+void Update() {
+    // Movement
+    float moveX = Input.GetAxis("Horizontal");
+    rb.velocity = new Vector2(moveX * moveSpeed, rb.velocity.y);
+
+    // Wall running
+    RaycastHit2D wallHit = Physics2D.CircleCast(circleCollider.bounds.center, circleCollider.radius, transform.right, circleCollider.radius, wallLayerMask);
+    if (wallHit) {
+        isWallRunning = true;
+        isGrounded = false;
+    } else {
+        isWallRunning = false;
+    }
+
+    // Wall sliding
+    if (isWallRunning && rb.velocity.y < 0f) {
+        isWallSliding = true;
+
+        // Limiting the player's speed while wall sliding
+        if (rb.velocity.y < -wallSlideSpeed) {
+            rb.velocity = new Vector2(rb.velocity.x, -wallSlideSpeed);
+        }
+    } else {
+        isWallSliding = false;
+    }
+
+    // Wall jumping
+    if (Input.GetKeyDown(KeyCode.Space) && ((isGrounded && !isWallSliding) || (isWallSliding && !hasJumpedOffWall))) {
+        if (isWallSliding) {
+            // Determining the direction of the player's wall jump based on the input
+            if (Input.GetKey(KeyCode.LeftArrow)) {
+                rb.AddForce(new Vector2(wallJumpDirection.x * wallJumpForce, wallJumpDirection.y * wallJumpForce), ForceMode2D.Impulse);
+                rb.velocity = new Vector2(-moveSpeed, jumpForce);
+            } else if (Input.GetKey(KeyCode.RightArrow)) {
+                rb.AddForce(new Vector2(wallJumpDirection.x * wallJumpForce, wallJumpDirection.y * wallJumpForce), ForceMode2D.Impulse);
+                rb.velocity = new Vector2(moveSpeed, jumpForce);
+            }
+            hasJumpedOffWall = true;
+        } else {
+            // Player jumps normally
+            rb.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
+        }
+    }
+
+   
+
+        // Check if grounded
+        RaycastHit2D groundHit = Physics2D.CircleCast(circleCollider.bounds.center, circleCollider.radius, Vector2.down, circleCollider.radius, wallLayerMask);
+        isGrounded = groundHit.collider != null;
+
+        // Wall jump timer
+        if (isWallSliding) {
+            wallJumpDirection = wallHit.normal;
+
+            if (Time.time >= lastWallJumpTime + wallJumpTime) {
+                isWallSticking = true;
+            }
+        } else {
+            isWallSticking = false;
+            lastWallJumpTime = Time.time;
+        }
+
+        // Reset wall jump flag
+        if (isGrounded || (isWallSliding && !hasJumpedOffWall)) {
+            hasJumpedOffWall = false;
+        }
+    }
+}
